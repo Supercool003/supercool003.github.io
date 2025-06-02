@@ -1,20 +1,80 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Play Sound Button</title>
+  <title>Play Beat with End Sound</title>
 </head>
 <body>
 
-<button onclick="playSound()">Play Sound</button>
+<label>
+  Number of repeats: 
+  <input type="number" id="repeatCount" min="1" value="3" />
+</label>
+<br/><br/>
 
-<audio id="myAudio" src="beat.mp3" preload="auto"></audio>
+<label>
+  <input type="checkbox" id="playEndSound" />
+  Play end sound after repeats
+</label>
+<br/><br/>
+
+<button id="playBtn">Play</button>
 
 <script>
-  function playSound() {
-    const audio = document.getElementById('myAudio');
-    audio.currentTime = 0;  // rewind to start
-    audio.play();
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+  let beatBuffer = null;
+  let endBuffer = null;
+
+  async function loadAudio(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Failed to load ${url}: ${response.statusText}`);
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    return audioContext.decodeAudioData(arrayBuffer);
   }
+
+  async function init() {
+    try {
+      beatBuffer = await loadAudio('beat.mp3'); // <-- Your beat file here
+      endBuffer = await loadAudio('end.mp3');   // <-- Your end sound file here
+      console.log('Audio files loaded');
+    } catch (err) {
+      console.error('Error loading audio:', err);
+    }
+  }
+
+  async function playSounds() {
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+
+    const repeatCount = parseInt(document.getElementById('repeatCount').value) || 1;
+    const playEnd = document.getElementById('playEndSound').checked;
+
+    if (!beatBuffer) {
+      alert('Beat audio not loaded yet!');
+      return;
+    }
+
+    const now = audioContext.currentTime;
+
+    for (let i = 0; i < repeatCount; i++) {
+      const source = audioContext.createBufferSource();
+      source.buffer = beatBuffer;
+      source.connect(audioContext.destination);
+      source.start(now + i * beatBuffer.duration);
+    }
+
+    if (playEnd && endBuffer) {
+      const endSource = audioContext.createBufferSource();
+      endSource.buffer = endBuffer;
+      endSource.connect(audioContext.destination);
+      endSource.start(now + repeatCount * beatBuffer.duration);
+    }
+  }
+
+  // Load audio once page loads
+  window.addEventListener('load', init);
+
+  document.getElementById('playBtn').addEventListener('click', playSounds);
 </script>
 
 </body>
