@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Play Sound Button</title>
+</head>
+<body>
+
+<button onclick="playSound()">Play Sound</button>
+
+<audio id="myAudio" src="beat.mp3" preload="auto"></audio>
+
+<script>
+  function playSound() {
+    const audio = document.getElementById('myAudio');
+    audio.currentTime = 0;  // rewind to start
+    audio.play();
+  }
+</script>
+
+</body>
+</html>
