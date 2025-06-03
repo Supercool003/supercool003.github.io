@@ -12,8 +12,9 @@
 
 <script>
   function playSound() {
-    times = 5
-    const audio = document.getElementById('myAudio');
+    times = parseInt(document.getElementById("beatCount").value)
+    console.log(times)
+    const audio = document.getElementById('myAudio')
     let count = 0;
 
     // Remove previous event listeners to avoid stacking
